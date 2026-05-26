@@ -9,6 +9,7 @@ import BoardScreen from '../screens/BoardScreen';
 import TaskDetailScreen from '../screens/TaskDetailScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import TaskListScreen from '../screens/TaskListScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -36,6 +37,14 @@ const MainTabs = () => {
         options={{ 
           title: 'Boards',
           tabBarIcon: ({ color }) => <TabIcon name="☰" color={color} /> 
+        }} 
+      />
+      <Tab.Screen 
+        name="TaskList" 
+        component={TaskListScreen} 
+        options={{ 
+          title: 'Tasks',
+          tabBarIcon: ({ color }) => <TabIcon name="📝" color={color} /> 
         }} 
       />
       <Tab.Screen 

@@ -25,3 +25,27 @@ export const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 };
+
+export const parseRequiredTime = (timeStr) => {
+  if (!timeStr) return 0;
+  
+  // if it's just a number, assume hours for backwards compatibility
+  if (!isNaN(timeStr)) {
+    return parseFloat(timeStr) * 60 * 60 * 1000;
+  }
+  
+  const lowerStr = timeStr.toString().toLowerCase().trim();
+  const match = lowerStr.match(/^([\d.]+)\s*(hour|hours|h|day|days|d|week|weeks|w|month|months|m)$/);
+  
+  if (match) {
+    const value = parseFloat(match[1]);
+    const unit = match[2];
+    
+    if (unit.startsWith('h')) return value * 60 * 60 * 1000;
+    if (unit.startsWith('d')) return value * 24 * 60 * 60 * 1000;
+    if (unit.startsWith('w')) return value * 7 * 24 * 60 * 60 * 1000;
+    if (unit.startsWith('m')) return value * 30 * 24 * 60 * 60 * 1000;
+  }
+  
+  return 0; // fallback
+};

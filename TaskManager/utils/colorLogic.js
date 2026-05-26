@@ -1,3 +1,5 @@
+import { parseRequiredTime } from './timeUtils';
+
 export const getTaskColor = (startDate, requiredTime, status) => {
   if (status === 'Completed') {
     return 'rgb(0, 255, 0)'; // Full Green
@@ -9,10 +11,10 @@ export const getTaskColor = (startDate, requiredTime, status) => {
 
   const start = new Date(startDate).getTime();
   const now = new Date().getTime();
-  const requiredMs = requiredTime * 60 * 60 * 1000; // assuming requiredTime is in hours
+  const requiredMs = parseRequiredTime(requiredTime);
 
   const passedTime = Math.max(0, now - start);
-  const initialTime = requiredMs;
+  const initialTime = requiredMs > 0 ? requiredMs : 3600000; // default 1h if invalid
 
   let progress = passedTime / initialTime;
   if (progress > 1) progress = 1; // Cap at 100%

@@ -5,18 +5,12 @@ const StatusBadge = ({ status }) => {
   if (!status) return null;
 
   const getStatusColor = () => {
-    switch (status) {
-      case 'Pending':
-        return '#808080';
-      case 'In Progress':
-        return '#007BFF';
-      case 'Review':
-        return '#FFC107';
-      case 'Completed':
-        return '#28A745';
-      default:
-        return '#6C757D';
-    }
+    const s = status.toLowerCase();
+    if (s.includes('pending') || s.includes('todo') || s.includes('to do')) return '#808080';
+    if (s.includes('progress') || s.includes('doing')) return '#007BFF';
+    if (s.includes('review')) return '#FFC107';
+    if (s.includes('completed') || s.includes('done')) return '#28A745';
+    return '#6C757D'; // Default
   };
 
   return (

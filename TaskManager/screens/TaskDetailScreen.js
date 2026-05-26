@@ -9,14 +9,26 @@ const TaskDetailScreen = ({ route, navigation }) => {
   const { addTask, editTask, removeTask } = useTasks(boardId);
   const owner = "Current Device User";
 
-  const [name, setName] = useState(task ? task.name : '');
-  const [description, setDescription] = useState(task ? task.description : '');
-  const [requiredTime, setRequiredTime] = useState(task ? task.requiredTime?.toString() : '1');
-  const [deadline, setDeadline] = useState(task ? task.deadline : new Date(Date.now() + 86400000).toISOString());
+  const [name, setName] = useState(task?.name || '');
+  const [description, setDescription] = useState(task?.description || '');
+  const [requiredTime, setRequiredTime] = useState(task?.requiredTime?.toString() || '1');
+  const [deadline, setDeadline] = useState(task?.deadline || new Date(Date.now() + 86400000).toISOString());
   const [priority, setPriority] = useState(task ? task.priority : 'Medium');
   const [status, setStatus] = useState(task ? task.status : 'Pending');
   const [listId, setListId] = useState(task ? task.listId : null);
   const [membersStr, setMembersStr] = useState(task && task.members ? task.members.join(', ') : owner);
+  
+  const [deadlineStr, setDeadlineStr] = useState(task?.deadline ? task.deadline.split('T')[0] : new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+  
+  const calculateRemainingTime = (deadlineDate) => {
+    const end = new Date(deadlineDate);
+    const now = new Date();
+    const diff = end - now;
+    if (diff <= 0) return 'Overdue';
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    return `${days}d ${hours}h left`;
+  };
   
   const [lists, setLists] = useState([]);
   const [logs, setLogs] = useState([]);
@@ -51,11 +63,16 @@ const TaskDetailScreen = ({ route, navigation }) => {
     const membersArray = membersStr.split(',').map(m => m.trim()).filter(m => m.length > 0);
     if (membersArray.length === 0) membersArray.push(owner);
 
+    let finalDeadline = deadline;
+    if (deadlineStr && deadlineStr.length === 10) {
+       finalDeadline = new Date(deadlineStr).toISOString();
+    }
+
     const taskData = {
       name,
       description,
-      requiredTime: parseFloat(requiredTime) || 0,
-      deadline,
+      requiredTime: requiredTime.trim() || '1 Hour', // Keep as string format
+      deadline: finalDeadline,
       priority,
       status,
       listId,
@@ -118,14 +135,58 @@ const TaskDetailScreen = ({ route, navigation }) => {
         <Text style={styles.label}>Task Name</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholderTextColor="#888" placeholder="e.g. Design UI" />
 
+        <View style={styles.readOnlyContainer}>
+          <Text style={styles.label}>Owner</Text>
+          <Text style={styles.readOnlyText}>{owner}</Text>
+        </View>
+
+        {!isNew && task?.startDate && (
+          <View style={styles.readOnlyContainer}>
+            <Text style={styles.label}>Start Date</Text>
+            <Text style={styles.readOnlyText}>{new Date(task.startDate).toLocaleDateString()}</Text>
+          </View>
+        )}
+
+        <Text style={styles.label}>Required Time (e.g. 2 Hours, 5 Days)</Text>
+        <TextInput 
+          style={styles.input} 
+          value={requiredTime} 
+          onChangeText={setRequiredTime} 
+          placeholderTextColor="#888" 
+          placeholder="e.g. 5 Days" 
+        />
+
+        <Text style={styles.label}>Deadline (YYYY-MM-DD)</Text>
+        <TextInput 
+          style={styles.input} 
+          value={deadlineStr} 
+          onChangeText={setDeadlineStr} 
+          onBlur={() => {
+             if (deadlineStr.length === 10) {
+                 const parsed = new Date(deadlineStr);
+                 if (!isNaN(parsed)) {
+                     setDeadline(parsed.toISOString());
+                 }
+             }
+          }}
+          placeholderTextColor="#888" 
+          placeholder="YYYY-MM-DD" 
+        />
+
+        {!isNew && deadline && (
+          <View style={styles.readOnlyContainer}>
+            <Text style={styles.label}>Remaining Time</Text>
+            <Text style={styles.readOnlyText}>{calculateRemainingTime(deadline)}</Text>
+          </View>
+        )}
+
         <Text style={styles.label}>Description</Text>
         <TextInput style={[styles.input, { height: 80 }]} value={description} onChangeText={setDescription} placeholderTextColor="#888" placeholder="Task details..." multiline />
 
         <Text style={styles.label}>Members (comma separated)</Text>
         <TextInput style={styles.input} value={membersStr} onChangeText={setMembersStr} placeholderTextColor="#888" placeholder="Alice, Bob, Charlie" />
 
-        <Text style={styles.label}>Required Time (hours)</Text>
-        <TextInput style={styles.input} value={requiredTime} onChangeText={setRequiredTime} placeholderTextColor="#888" keyboardType="numeric" />
+
 
         <Text style={styles.label}>Priority</Text>
         <View style={styles.buttonGroup}>
@@ -197,6 +258,8 @@ const styles = StyleSheet.create({
   form: { padding: 16 },
   label: { color: '#AAA', marginBottom: 8, fontSize: 14, fontWeight: 'bold' },
   input: { backgroundColor: '#1E1E1E', color: '#FFF', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#333', marginBottom: 16 },
+  readOnlyContainer: { marginBottom: 16 },
+  readOnlyText: { color: '#FFF', fontSize: 16, padding: 12, backgroundColor: '#1E1E1E', borderRadius: 8, borderWidth: 1, borderColor: '#333', opacity: 0.7 },
   buttonGroup: { flexDirection: 'row', marginBottom: 16 },
   buttonGroupScroll: { flexDirection: 'row', marginBottom: 16 },
   groupButton: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#1E1E1E', borderRadius: 8, marginRight: 8, borderWidth: 1, borderColor: '#333' },

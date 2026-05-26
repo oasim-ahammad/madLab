@@ -57,7 +57,12 @@ export const saveList = async (list) => {
   try {
     const jsonValue = await AsyncStorage.getItem(STORAGE_KEYS.LISTS);
     const allLists = jsonValue != null ? JSON.parse(jsonValue) : [];
-    allLists.push(list);
+    const index = allLists.findIndex(l => l.id === list.id);
+    if (index >= 0) {
+      allLists[index] = list;
+    } else {
+      allLists.push(list);
+    }
     await AsyncStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(allLists));
     return list;
   } catch (e) {
@@ -84,6 +89,16 @@ export const getTasks = async (boardId) => {
     return allTasks.filter(task => task.boardId === boardId);
   } catch (e) {
     console.error('Error getting tasks:', e);
+    return [];
+  }
+};
+
+export const getAllTasks = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(STORAGE_KEYS.TASKS);
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.error('Error getting all tasks:', e);
     return [];
   }
 };
@@ -139,6 +154,16 @@ export const getActivityLogs = async (taskId) => {
     return allLogs.filter(log => log.taskId === taskId);
   } catch (e) {
     console.error('Error getting activity logs:', e);
+    return [];
+  }
+};
+
+export const getAllActivityLogs = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(STORAGE_KEYS.ACTIVITY_LOGS);
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.error('Error getting all activity logs:', e);
     return [];
   }
 };

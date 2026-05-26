@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getTasks, saveTask, updateTaskStatus, deleteTask, getLists } from '../storage/storageService';
+import { getTasks, saveTask, updateTaskStatus, deleteTask, getLists, saveList, deleteList } from '../storage/storageService';
 import { logActivity } from '../utils/activityLog';
 
 export const useTasks = (boardId) => {
@@ -54,6 +54,29 @@ export const useTasks = (boardId) => {
       await fetchBoardData();
   }
 
+  const addList = async (listName) => {
+    const newList = {
+      id: `list-${Date.now()}`,
+      boardId,
+      name: listName,
+      order: lists.length
+    };
+    await saveList(newList);
+    await fetchBoardData();
+    return newList;
+  };
+
+  const removeList = async (listId) => {
+    await deleteList(listId);
+    await fetchBoardData();
+  };
+
+  const renameList = async (list, newName) => {
+    const updatedList = { ...list, name: newName };
+    await saveList(updatedList);
+    await fetchBoardData();
+  };
+
   return {
     tasks,
     lists,
@@ -62,6 +85,9 @@ export const useTasks = (boardId) => {
     addTask,
     moveTask,
     removeTask,
-    editTask
+    editTask,
+    addList,
+    removeList,
+    renameList
   };
 };
